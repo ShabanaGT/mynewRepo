@@ -1,44 +1,65 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-void main() {
-  runApp(MyApp());
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+class getuser extends StatefulWidget {
+  const getuser({super.key});
+
+  @override
+  State<getuser> createState() => _getuserState();
 }
 
-class MyApp extends StatelessWidget {
+class _getuserState extends State<getuser> {
+  var users=[];
+  bool isLoading=false;
+  Future<void> getUsername() async {
+    setState(() {
+      isLoading = true;
+    });
+    final apiResponse = await http.get(Uri.parse("https://jsonplaceholder.typicode.com/users"));
+    if(apiResponse.statusCode==200){
+      setState(() {
+        isLoading=false;
+        users=json.decode(apiResponse.body);
+      });
+    }
+    else{
+      isLoading=false;
+      throw Exception("No data");
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('GridView')),
-        body: GridView.count(
-          crossAxisCount: 2,
-          children: [
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Image.network('https://picsum.photos/200?image=25',
-                      height: 150, width: 150),
-                  const Text('Product 1'),
-                  const Text('Price: \$100'),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Image.network('https://picsum.photos/200?image=25',
-                      height: 150, width: 150),
-                  const Text('Product 2'),
-                  const Text('Price: \$150'),
-                ],
-              ),
-            ),
-            // Add more product cards as needed
-          ],
-        ),
+
+
+    return Scaffold(
+      appBar: AppBar(
+        title:Text("Curio campus_type"),
       ),
+      body:Column(
+        children: [
+          ElevatedButton(onPressed: (){
+            getUsername();
+          }, child: Text("login")),
+          SizedBox(height: 20,),
+          Expanded(child:
+          ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (  context,  index){
+              var user=users[index];
+              return ListTile(
+                title: Text(user["id"].toString()),
+                subtitle:Text (
+                    "Name:${user["name"]}\n"
+                    "Email:${user["email"]}\n"
+                    "Address:${user["address"]["street"]}\n"
+                ),
+              );
+            }
+
+          ))
+        ],
+      )
     );
   }
 }
